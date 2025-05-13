@@ -1,0 +1,94 @@
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
+export default function ToDoApp() {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState("");
+  const [editIndex, setEditIndex] = useState(null);
+  const [dueDate, setDueDate] = useState(new Date());
+
+  const handleAddTask = () => {
+    if (newTask.trim()) {
+      const task = { text: newTask, completed: false, dueDate };
+      if (editIndex !== null) {
+        const updatedTasks = [...tasks];
+        updatedTasks[editIndex] = task;
+        setTasks(updatedTasks);
+        setEditIndex(null);
+      } else {
+        setTasks([...tasks, task]);
+      }
+      setNewTask("");
+    }
+  };
+
+  const toggleComplete = (index) => {
+    const updatedTasks = [...tasks];
+    updatedTasks[index].completed = !updatedTasks[index].completed;
+    setTasks(updatedTasks);
+  };
+
+  const handleEdit = (index) => {
+    setNewTask(tasks[index].text);
+    setDueDate(new Date(tasks[index].dueDate));
+    setEditIndex(index);
+  };
+
+  const handleDelete = (index) => {
+    const updatedTasks = tasks.filter((_, i) => i !== index);
+    setTasks(updatedTasks);
+  };
+
+  return (
+    <div className="max-w-xl mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">To-Do List</h1>
+      <div className="flex gap-2 mb-4">
+        <Input
+          placeholder="Add a new task"
+          value={newTask}
+          onChange={(e) => setNewTask(e.target.value)}
+        />
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">📅</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <Calendar mode="single" selected={dueDate} onSelect={setDueDate} />
+          </DialogContent>
+        </Dialog>
+        <Button onClick={handleAddTask}>{editIndex !== null ? "Update" : "Add"}</Button>
+      </div>
+      <div className="space-y-2">
+        {tasks.map((task, index) => (
+          <Card key={index} className="flex items-center justify-between p-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                checked={task.completed}
+                onCheckedChange={() => toggleComplete(index)}
+              />
+              <div>
+                <p className={task.completed ? "line-through" : ""}>{task.text}</p>
+                <small className="text-sm text-gray-500">
+                  Due: {new Date(task.dueDate).toLocaleString()}
+                </small>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => handleEdit(index)}>
+                Edit
+              </Button>
+              <Button variant="destructive" size="sm" onClick={() => handleDelete(index)}>
+                Delete
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
